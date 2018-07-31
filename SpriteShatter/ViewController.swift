@@ -96,6 +96,15 @@ class ViewController: NSViewController {
             scene.scaleMode = .aspectFill
             scene.backgroundColor = SKColor.black
             view.presentScene(scene)
+
+            // For a fun effect, un-comment this:
+            /*
+            let filter = CIFilter.init(name: "CIEdges")!
+            filter.setDefaults()
+            filter.setValue(25.0, forKey: "inputIntensity")
+            scene.filter = filter
+            scene.shouldEnableEffects = true
+            */
             
             let attributes = [NSAttributedStringKey.foregroundColor: NSColor.white]
             let titleString = NSAttributedString(string: "Heatmap", attributes: attributes)
