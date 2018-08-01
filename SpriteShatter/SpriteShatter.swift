@@ -106,8 +106,8 @@ extension SKSpriteNode {
                     
                     let subtextRect = CGRect(x: CGFloat(x) / piecesGridSize.width * originalTextureRect.size.width + originalTextureRect.origin.x,
                                              y: CGFloat(y) / piecesGridSize.height * originalTextureRect.size.height + originalTextureRect.origin.y,
-                                             width: 1.0 / piecesGridSize.width,
-                                             height: 1.0 / piecesGridSize.height)
+                                             width: originalTextureRect.size.width / piecesGridSize.width,
+                                             height: originalTextureRect.size.height / piecesGridSize.height)
                     let subtexture = SKTexture.init(rect: subtextRect, in: originalTexture)
                     let newX = CGFloat(CGFloat(x) * pieceWidth - (originalSize.width / 2.0) + halfPieceWidth)
                     let newY = CGFloat(CGFloat(y) * pieceHeight  - (originalSize.height / 2.0)  + halfPieceHeight)
