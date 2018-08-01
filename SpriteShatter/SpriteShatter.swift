@@ -36,19 +36,14 @@ extension SKSpriteNode {
     
     @discardableResult func shatter(into gridResolution: CGSize, animation: ShatterAnimationType, showHeatmap: Bool) -> ShatterNode {
         guard let originalTexture = texture else { fatalError("\(#function) requires a node with a valid SKTexture.") }
-        
         let originalTextureRect = originalTexture.textureRect()
         let originalSize = size
         let gridSizeWidth = gridResolution.width.rounded()
         let gridSizeHeight = gridResolution.height.rounded()
         
-        // Hide the receiver
+        // Hide the receiver and create the root parent node which will hold all of the shattered 'pieces'
         
         isHidden = true
-        
-        
-        // Create the root parent node which will hold all of the shattered 'pieces'
-        
         let shatterParentNode = ShatterNode()
         shatterParentNode.position = position
         shatterParentNode.zPosition = zPosition
@@ -59,7 +54,6 @@ extension SKSpriteNode {
         let pieceHeight: CGFloat = originalSize.height / gridSizeHeight
         let halfPieceWidth = pieceWidth / 2.0
         let halfPieceHeight = pieceHeight / 2.0
-        
         var pieces: [ShatterPieceNode] = []
         
         let triangleCropShapes: [SKShapeNode] = {
