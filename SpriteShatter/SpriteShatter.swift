@@ -31,33 +31,32 @@ extension SKSpriteNode {
     ///   - gridResolution: Size of the shatter. Each X,Y results in the creation of 2 triangle nodes, which
     ///                     in turn have parent SKCropNodes and related masking nodes.
     ///   - animation: The animation style. This is mostly for demo purposes, 'automatic' is almost always desirable.
+    ///   - showHeatmap: Added for demo app colorization. Can be removed.
     /// - Returns: Returns a reference to the newly-created parent node which owns all of the children for the shatter.
     
     @discardableResult func shatter(into gridResolution: CGSize, animation: ShatterAnimationType, showHeatmap: Bool) -> ShatterNode {
         guard let originalTexture = texture else { fatalError("\(#function) requires a node with a valid SKTexture.") }
         
         let originalTextureRect = originalTexture.textureRect()
-        let originalZPosition = zPosition
-        let originalPosition = position
         let originalSize = size
-        let originalZRotation = zRotation
+        let gridSizeWidth = gridResolution.width.rounded()
+        let gridSizeHeight = gridResolution.height.rounded()
         
         // Hide the receiver
         
         isHidden = true
         
-        let piecesGridSize = CGSize(width: Int(gridResolution.width), height: Int(gridResolution.height))
         
         // Create the root parent node which will hold all of the shattered 'pieces'
         
         let shatterParentNode = ShatterNode()
-        shatterParentNode.position = originalPosition
-        shatterParentNode.zPosition = originalZPosition
-        shatterParentNode.zRotation = originalZRotation
+        shatterParentNode.position = position
+        shatterParentNode.zPosition = zPosition
+        shatterParentNode.zRotation = zRotation
         parent?.addChild(shatterParentNode)
         
-        let pieceWidth: CGFloat = originalSize.width / piecesGridSize.width
-        let pieceHeight: CGFloat = originalSize.height / piecesGridSize.height
+        let pieceWidth: CGFloat = originalSize.width / gridSizeWidth
+        let pieceHeight: CGFloat = originalSize.height / gridSizeHeight
         let halfPieceWidth = pieceWidth / 2.0
         let halfPieceHeight = pieceHeight / 2.0
         
@@ -98,23 +97,21 @@ extension SKSpriteNode {
         // and the corner pieces will be the furthest away from the 'blast point'
         let calculatedMaxPieceDistance: CGFloat = CGPoint(x: -(originalSize.width / 2.0) + halfPieceWidth, y: -(originalSize.height / 2.0)  + halfPieceHeight).distance(to: .zero)
         
-        for y in 0..<Int(piecesGridSize.height) {
-            for x in 0..<Int(piecesGridSize.width) {
+        for y in 0..<Int(gridSizeHeight) {
+            for x in 0..<Int(gridSizeWidth) {
                 for triangleIndex in 0...1 {
                     
                     // Calculate the subtexture coordinates and starting position for the individual shatter piece node
                     
-                    let subtextRect = CGRect(x: CGFloat(x) / piecesGridSize.width * originalTextureRect.size.width + originalTextureRect.origin.x,
-                                             y: CGFloat(y) / piecesGridSize.height * originalTextureRect.size.height + originalTextureRect.origin.y,
-                                             width: originalTextureRect.size.width / piecesGridSize.width,
-                                             height: originalTextureRect.size.height / piecesGridSize.height)
+                    let subtextRect = CGRect(x: CGFloat(x) / gridSizeWidth * originalTextureRect.size.width + originalTextureRect.origin.x,
+                                             y: CGFloat(y) / gridSizeHeight * originalTextureRect.size.height + originalTextureRect.origin.y,
+                                             width: originalTextureRect.size.width / gridSizeWidth,
+                                             height: originalTextureRect.size.height / gridSizeHeight)
                     let subtexture = SKTexture.init(rect: subtextRect, in: originalTexture)
                     let newX = CGFloat(CGFloat(x) * pieceWidth - (originalSize.width / 2.0) + halfPieceWidth)
                     let newY = CGFloat(CGFloat(y) * pieceHeight  - (originalSize.height / 2.0)  + halfPieceHeight)
                     
                     // Create the crop node, its mask, and the actual textured sprite
-                    // (SKShapeNode textured using -fillTexture may be a viable alternative
-                    // though I've not been able to get it to render as expected in practice.)
                     
                     let piece = SKSpriteNode.init(texture: subtexture)
                     piece.size = CGSize(width: pieceWidth, height: pieceHeight)
@@ -125,9 +122,10 @@ extension SKSpriteNode {
                     shatterPieceNode.addChild(piece)
                     shatterParentNode.addChild(shatterPieceNode)
                     
+                    //////////////////////////////////////////////////////////////////////
                     // Here is where the individual pieces are randomized and animated
-                    // Tweaking these values will allow control over the spin, scaling, and movement
-                    // of each piece in the shatter effect
+                    // Tweaking these values will allow control over the spin, scaling,
+                    // and movement of each piece in the shatter effect
                     
                     let blastIntensity = 1.0 - (CGPoint(x: newX, y: newY).distance(to: .zero) / calculatedMaxPieceDistance)
                     let angleFromCenter: CGFloat = atan2(newY, newX)
@@ -135,6 +133,8 @@ extension SKSpriteNode {
                     let speed: CGFloat = 0.3 + (0.6 * blastIntensity) + (1.5 * Random.between0And1()) + (arc4random() % 6 == 0 ? 4.0 : 0.0) /* Make a few pieces really fly out */
                     let rotationSpin = (angleFromCenter * 24.0 * Random.between0And1()) * (triangleIndex == 1 ? 1 : -1)
                     let scaleAdjust = (Random.between0And1() * 2.0) - 1.0
+                    
+                    //////////////////////////////////////////////////////////////////////
                     
                     // Colorization (for demo)
                     
